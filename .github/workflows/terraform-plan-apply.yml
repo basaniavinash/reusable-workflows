@@ -1,0 +1,26 @@
+name: terraform plan apply
+
+on:
+  workflow_call:
+    inputs:
+      workdir: { required: true, type: string }
+      apply: { required: false, type: boolean, default: false }
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  tf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{vars.AWS_ACCOUNT_ID}}:role/gha-terraform
+          aws-region: ${{vars.AWS_REGION}}
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform -chdir=${{inputs.workdir}} init -input=false
+      - run: terraform -chdir-${{inputs.workdir}} plan -input=false
+      - if: ${{inputs.apply == true}}
+        run: terraform -chdir=${{inputs.workdir}} apply -input=false -auto-approve
