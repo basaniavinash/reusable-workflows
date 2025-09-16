@@ -21,6 +21,6 @@ jobs:
           aws-region: ${{vars.AWS_REGION}}
       - uses: hashicorp/setup-terraform@v3
       - run: terraform -chdir=${{inputs.workdir}} init -input=false
-      - run: terraform -chdir-${{inputs.workdir}} plan -input=false
+      - run: terraform -chdir=${{inputs.workdir}} plan -input=false
       - if: ${{inputs.apply == true}}
         run: terraform -chdir=${{inputs.workdir}} apply -input=false -auto-approve
