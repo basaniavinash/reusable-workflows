@@ -3,6 +3,7 @@ on:
   workflow_call:
     inputs:
       ecr_repo: { required: true, type: string }
+      aws_region: { required: true, type: string }
 
 permissions:
   id-token: write
@@ -12,20 +13,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      AWS_REGION: ${{vars.AWS_REGION}}
-      AWS_ACCOUNT_ID: ${{secrets.AWS_ACCOUNT_ID}}
+      AWS_REGION: ${{inputs.aws_region}}
       ECR_REPO: ${{inputs.ecr_repo}}
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{env.AWS_ACCOUNT_ID}}:role/gha-ecr-push
+          role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/gha-ecr-push
           aws-region: ${{env.AWS_REGION}}
       - uses: aws-actions/amazon-ecr-login@v2
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ${{env.AWS_ACCOUNT_ID}}.dkr.ecr.${{env.AWS_REGION}}.amazonaws.com/${{env.ECR_REPO}}
+          images: ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{env.AWS_REGION}}.amazonaws.com/${{env.ECR_REPO}}
           tags: |
             type=sha,format=short
             type=raw,value=latest,enable={{is_default_branch}}
